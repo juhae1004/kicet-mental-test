@@ -97,7 +97,10 @@ img{max-width:100%;display:block}
 #loading .wait{color:var(--gray);font-size:13px}
 
 /* ---------- 04 결과 ---------- */
-#result{background:linear-gradient(180deg,var(--bg-blue),#fff 40%);padding:28px 24px 40px}
+#result{background:linear-gradient(180deg,var(--bg-blue),#fff 40%);padding:28px 24px 110px}
+.cta-bar{position:fixed;left:50%;transform:translateX(-50%);bottom:0;width:100%;max-width:420px;
+  padding:24px 20px calc(14px + env(safe-area-inset-bottom));z-index:40;
+  background:linear-gradient(180deg,rgba(255,255,255,0),rgba(255,255,255,.94) 45%)}
 .r-label{color:var(--gray);font-size:13px;font-weight:500;text-align:center}
 .r-card{background:#fff;border-radius:24px;padding:28px 24px;margin-top:14px;
   box-shadow:0 12px 36px rgba(20,40,90,.10);text-align:center}
@@ -116,7 +119,8 @@ img{max-width:100%;display:block}
 .r-again span{cursor:pointer}
 
 /* ---------- 기술 캐러셀 ---------- */
-.tech{margin-top:36px}
+.tech{margin-top:20px}
+.r-btns{margin-top:6px}
 .tech .t-label{color:var(--gray);font-size:13px;font-weight:500;text-align:center;margin-bottom:14px}
 .carousel{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;
   padding:4px 2px 10px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
@@ -237,13 +241,6 @@ img{max-width:100%;display:block}
       <div class="r-sub" id="rSub"></div>
       <div class="r-fact" id="rFact"></div>
     </div>
-    <div class="r-btns">
-      <button onclick="saveImage()">이미지 저장</button>
-      <button onclick="shareLink()">링크 공유</button>
-    </div>
-    <button class="cta" style="margin-top:12px" onclick="openModal()">경품 응모하기</button>
-    <p class="r-again"><span onclick="restart()">테스트 다시하기</span> &nbsp;·&nbsp; <span onclick="nextResultDemo()">다른 유형 구경하기</span></p>
-
     <div class="tech">
       <p class="t-label">당신과 닮은 진짜 세라믹 기술</p>
       <div class="carousel" id="carousel">
@@ -259,6 +256,14 @@ img{max-width:100%;display:block}
       <div class="c-dots" id="cDots"><i class="on"></i><i></i><i></i><i></i></div>
       <p class="swipe-hint">← 밀어서 다른 세라믹 기술 구경하기</p>
     </div>
+
+    <div class="r-btns">
+      <button onclick="saveImage()">이미지 저장</button>
+      <button onclick="shareLink()">링크 공유</button>
+    </div>
+    <p class="r-again"><span onclick="restart()">테스트 다시하기</span> &nbsp;·&nbsp; <span onclick="nextResultDemo()">다른 유형 구경하기</span></p>
+
+    <div class="cta-bar"><button class="cta" onclick="openModal()">🎁 경품 응모하기</button></div>
   </section>
 
   <!-- 06 완료 -->
