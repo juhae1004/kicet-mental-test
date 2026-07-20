@@ -35,3 +35,10 @@ create policy "admin read entries" on entries
 
 create policy "admin read captures" on storage.objects
   for select to authenticated using (bucket_id = 'captures');
+
+-- 4) 팔로우 사후 검증 (관리자가 인스타 팔로워 목록과 대조해 ✓/✗ 판정)
+--    verified: null=미검증, true=팔로우 확인됨, false=허위 체크
+alter table entries add column if not exists verified boolean;
+
+create policy "admin update entries" on entries
+  for update to authenticated using (true) with check (true);

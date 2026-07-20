@@ -67,6 +67,11 @@ tr.winner td{background:#FFF4E8}
 .thumb{width:52px;height:52px;object-fit:cover;border-radius:8px;cursor:pointer;background:#EDF1F8;border:1px solid var(--line)}
 .tag{display:inline-block;border-radius:99px;padding:3px 10px;font-size:11px;font-weight:700}
 .tag.f{background:#E9F8EE;color:#1B9E4B}.tag.nf{background:#F1F3F8;color:#98A2B5}
+.tag.x{background:#FDEBEC;color:#D64545}
+.vbtn{width:28px;height:28px;border-radius:8px;border:1.5px solid var(--line);background:#fff;
+  font-size:13px;font-weight:700;margin-left:4px}
+.vbtn.ok{color:#1B9E4B}.vbtn.no{color:#D64545}
+.vbtn:hover{border-color:var(--orange)}
 .empty{padding:44px;text-align:center;color:var(--gray);font-size:14px}
 
 /* 캡쳐 확대 */
@@ -119,17 +124,23 @@ tr.winner td{background:#FFF4E8}
   <div class="panel">
     <h2>🎲 당첨자 추첨</h2>
     <div class="draw-row">
-      <input type="number" id="drawN" value="1" min="1"> <span style="font-size:13px">명 추첨</span>
-      <label><input type="checkbox" id="drawFollow"> 팔로우 체크한 응모자만</label>
+      <input type="number" id="drawN" value="1" min="1"> <span style="font-size:13px">명 추첨 · 대상:</span>
+      <select id="drawPool" style="height:42px;border:1.5px solid var(--line);border-radius:10px;padding:0 10px;font-size:13px;font-family:inherit">
+        <option value="all">전체 응모자</option>
+        <option value="follow">팔로우 체크한 응모자</option>
+        <option value="verified" selected>✓ 팔로우 검증된 응모자만</option>
+      </select>
       <button class="btn" onclick="draw()">추첨하기</button>
     </div>
+    <p style="color:var(--gray);font-size:12px;margin-top:8px">
+      💡 추첨 전 아래 목록의 <b>팔로우 검증</b> 열에서 인스타 팔로워 목록과 대조해 ✓/✗ 판정을 먼저 끝내 주세요.</p>
     <div id="winners"></div>
   </div>
 
   <div style="overflow-x:auto">
   <table>
     <thead><tr>
-      <th>응모 시각</th><th>닉네임</th><th>연락처</th><th>결과 유형</th><th>팔로우</th><th>인증 캡쳐</th>
+      <th>응모 시각</th><th>닉네임</th><th>연락처</th><th>결과 유형</th><th>팔로우</th><th>팔로우 검증</th><th>인증 캡쳐</th>
     </tr></thead>
     <tbody id="rows"></tbody>
   </table>
@@ -195,16 +206,17 @@ async function loadData(){
   try{
     if(DEMO){
       const raw = JSON.parse(localStorage.getItem('kicet_entries')||'[]');
-      DATA = raw.map(e => ({ at: e.at, name: e.name, phone: e.phone, follow: !!e.follow,
-        type: e.type, temp: e.temp, thumb: e.capture || null })).reverse();
+      DATA = raw.map(e => ({ id: null, at: e.at, name: e.name, phone: e.phone, follow: !!e.follow,
+        verified: e.verified ?? null, type: e.type, temp: e.temp, thumb: e.capture || null })).reverse();
     } else {
       const H = { apikey: PUB.key, Authorization: 'Bearer ' + CFG.token };
       const res = await fetch(PUB.url + '/rest/v1/entries?select=*&order=created_at.desc', { headers: H });
       if(res.status === 401){ logout(); return; } // 세션 만료 → 재로그인
       if(!res.ok) throw new Error('조회 실패 (' + res.status + ')');
       const rows = await res.json();
-      DATA = rows.map(r => ({ at: r.created_at, name: r.name, phone: r.phone, follow: !!r.follow,
-        type: r.type, temp: r.temp, path: r.capture_path, thumb: null }));
+      DATA = rows.map(r => ({ id: r.id, at: r.created_at, name: r.name, phone: r.phone, follow: !!r.follow,
+        verified: (r.verified === undefined ? null : r.verified), type: r.type, temp: r.temp,
+        path: r.capture_path, thumb: null }));
       // 비공개 버킷 캡쳐 → 1시간짜리 서명 URL 발급
       await Promise.all(DATA.filter(d => d.path).map(async d => {
         try{
@@ -253,11 +265,23 @@ function render(){
     const cap = d.thumb
       ? `<img class="thumb" src="${d.thumb}" onclick="viewCap('${encodeURIComponent(d.thumb)}')" alt="캡쳐">`
       : '<span style="color:#98A2B5">없음</span>';
+    let vCell;
+    if(!d.follow){
+      vCell = '<span style="color:#98A2B5">—</span>';
+    } else {
+      const badge = d.verified === true ? '<span class="tag f">✓ 확인됨</span>'
+        : d.verified === false ? '<span class="tag x">✗ 아님</span>'
+        : '<span class="tag nf">미검증</span>';
+      vCell = badge +
+        `<button class="vbtn ok" title="팔로우 확인됨" onclick="verify(${i}, true)">✓</button>` +
+        `<button class="vbtn no" title="팔로우 안 함" onclick="verify(${i}, false)">✗</button>`;
+    }
     tb.insertAdjacentHTML('beforeend',
       `<tr class="${lastWinners.has(d.phone) ? 'winner' : ''}">
         <td>${time}</td><td><b>${esc(d.name)}</b></td><td>${esc(d.phone)}</td>
         <td>${TYPE_META[d.type] ? TYPE_META[d.type].label : (d.temp||'-')}</td>
         <td>${d.follow ? '<span class="tag f">팔로우</span>' : '<span class="tag nf">미체크</span>'}</td>
+        <td style="white-space:nowrap">${vCell}</td>
         <td>${cap}</td></tr>`);
   });
   document.getElementById('empty').style.display = total ? 'none' : 'block';
@@ -268,11 +292,39 @@ function viewCap(u){
   document.getElementById('viewer').classList.add('open');
 }
 
+/* ---------- 팔로우 사후 검증 ---------- */
+async function verify(idx, val){
+  const d = DATA[idx];
+  if(!d) return;
+  const newVal = d.verified === val ? null : val; // 같은 버튼 재클릭 시 미검증으로 되돌림
+  if(DEMO){
+    const raw = JSON.parse(localStorage.getItem('kicet_entries')||'[]');
+    const t = raw.find(e => e.phone === d.phone);
+    if(t){ t.verified = newVal; localStorage.setItem('kicet_entries', JSON.stringify(raw)); }
+  } else {
+    const res = await fetch(PUB.url + '/rest/v1/entries?id=eq.' + d.id, {
+      method: 'PATCH',
+      headers: { apikey: PUB.key, Authorization: 'Bearer ' + CFG.token,
+        'Content-Type': 'application/json', Prefer: 'return=minimal' },
+      body: JSON.stringify({ verified: newVal })
+    });
+    if(!res.ok){ alert('저장 실패 (' + res.status + ') — verified 컬럼 추가 SQL을 실행했는지 확인해 주세요'); return; }
+  }
+  d.verified = newVal;
+  render();
+}
+
 /* ---------- 추첨 ---------- */
 function draw(){
   const n = Math.max(1, parseInt(document.getElementById('drawN').value)||1);
-  let pool = document.getElementById('drawFollow').checked ? DATA.filter(d => d.follow) : DATA.slice();
-  if(!pool.length){ alert('추첨 대상이 없어요!'); return; }
+  const mode = document.getElementById('drawPool').value;
+  let pool = DATA.slice();
+  if(mode === 'follow') pool = DATA.filter(d => d.follow);
+  if(mode === 'verified') pool = DATA.filter(d => d.verified === true);
+  if(!pool.length){
+    alert(mode === 'verified' ? '검증(✓ 확인됨) 처리된 응모자가 아직 없어요!\n목록에서 팔로우 검증부터 진행해 주세요.' : '추첨 대상이 없어요!');
+    return;
+  }
   const winners = [];
   while(winners.length < Math.min(n, pool.length)){
     const i = Math.floor(Math.random() * pool.length);
@@ -286,11 +338,13 @@ function draw(){
 
 /* ---------- CSV ---------- */
 function downloadCSV(){
-  const head = ['응모시각','닉네임','연락처','결과유형','온도','팔로우','캡쳐'];
+  const head = ['응모시각','닉네임','연락처','결과유형','온도','팔로우','팔로우검증','캡쳐'];
   const lines = [head.join(',')].concat(DATA.map(d =>
     [new Date(d.at).toLocaleString('ko-KR'), d.name, d.phone,
      (TYPE_META[d.type] ? TYPE_META[d.type].label.replace(/^\S+\s/,'') : ''), d.temp||'',
-     d.follow ? 'Y' : 'N', (d.path || (d.thumb ? '첨부' : ''))].map(v => '"' + String(v).replace(/"/g,'""') + '"').join(',')));
+     d.follow ? 'Y' : 'N',
+     d.verified === true ? '확인됨' : d.verified === false ? '아님' : '미검증',
+     (d.path || (d.thumb ? '첨부' : ''))].map(v => '"' + String(v).replace(/"/g,'""') + '"').join(',')));
   const blob = new Blob(['﻿' + lines.join('\n')], { type: 'text/csv;charset=utf-8' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
