@@ -495,7 +495,10 @@ function closeModal(){ document.getElementById('modal').classList.remove('open')
 
 /* 운영 배포 시 Supabase 프로젝트 정보 입력 → 자동으로 DB 저장 모드로 전환
    (비워두면 브라우저 localStorage에만 저장되는 데모 모드) */
-const SUPABASE = { url: '', anonKey: '' };
+const SUPABASE = {
+  url: 'https://aywniebhpkwbxravwwbb.supabase.co',
+  anonKey: 'sb_publishable_fNcEkqwukF1LzrXp6jqZww_lDgYNhO7'
+};
 
 async function submitEntry(){
   const name = document.getElementById('fName').value.trim();
@@ -507,7 +510,8 @@ async function submitEntry(){
   const follow = document.getElementById('fFollow').checked;
 
   if(SUPABASE.url && SUPABASE.anonKey){
-    const H = { Authorization: 'Bearer ' + SUPABASE.anonKey, apikey: SUPABASE.anonKey };
+    const H = { apikey: SUPABASE.anonKey };
+    if(SUPABASE.anonKey.startsWith('eyJ')) H.Authorization = 'Bearer ' + SUPABASE.anonKey;
     try{
       // 1) 캡쳐 이미지 → Storage 업로드 (비공개 버킷)
       const path = Date.now() + '-' + Math.random().toString(36).slice(2) + '.jpg';

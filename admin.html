@@ -87,12 +87,12 @@ tr.winner td{background:#FFF4E8}
     <p>KICET 멘탈 내열 테스트 이벤트의 응모 데이터를 조회하는 관리자 전용 페이지입니다.</p>
     <label>Supabase 프로젝트 URL</label>
     <input id="gUrl" placeholder="https://xxxx.supabase.co">
-    <label>Service Role 키 (관리자 키)</label>
-    <input id="gKey" type="password" placeholder="service_role 키를 붙여넣어 주세요">
+    <label>관리자 키 (Secret key 또는 service_role)</label>
+    <input id="gKey" type="password" placeholder="sb_secret_... 또는 service_role 키">
     <button class="btn" onclick="connect()">응모 현황 열기</button>
     <button class="btn gray demo" onclick="demoMode()">🧪 로컬 데모 데이터로 미리보기</button>
     <p class="gate-note">· 키는 이 브라우저 탭에만 임시 저장되며 코드나 서버에 남지 않아요.<br>
-    · Service Role 키는 Supabase 대시보드 → Settings → API에서 복사할 수 있어요. 외부에 공유 금지!</p>
+    · 관리자 키는 Supabase 대시보드 → Settings → API Keys의 Secret keys에서 복사할 수 있어요. 외부에 공유 금지!</p>
   </div>
 </div>
 
@@ -186,7 +186,8 @@ async function loadData(){
       DATA = raw.map(e => ({ at: e.at, name: e.name, phone: e.phone, follow: !!e.follow,
         type: e.type, temp: e.temp, thumb: e.capture || null })).reverse();
     } else {
-      const H = { Authorization: 'Bearer ' + CFG.key, apikey: CFG.key };
+      const H = { apikey: CFG.key };
+      if(CFG.key.startsWith('eyJ')) H.Authorization = 'Bearer ' + CFG.key;
       const res = await fetch(CFG.url + '/rest/v1/entries?select=*&order=created_at.desc', { headers: H });
       if(!res.ok) throw new Error('조회 실패 (' + res.status + ') — 키와 URL을 확인해 주세요');
       const rows = await res.json();
