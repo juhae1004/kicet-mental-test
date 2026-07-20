@@ -145,6 +145,12 @@ img{max-width:100%;display:block}
 .field input{width:100%;height:52px;border:1.5px solid #D9E2F2;border-radius:12px;
   padding:0 16px;font-size:15px;font-family:inherit;background:var(--soft)}
 .field input:focus{outline:none;border-color:var(--orange);background:#fff}
+.upload{border:1.5px dashed #D9E2F2;border-radius:12px;background:var(--soft);
+  padding:18px 16px;text-align:center;cursor:pointer}
+.upload:active{border-color:var(--orange)}
+#upEmpty{color:var(--gray);font-size:14px;font-weight:500;line-height:1.5}
+#upEmpty small{color:var(--light-gray);font-size:11px;font-weight:400}
+#upPreview{max-height:150px;margin:0 auto;border-radius:8px}
 .agree{display:flex;align-items:center;gap:10px;margin-top:16px;font-size:13px}
 .agree a{color:var(--gray)}
 .agree input{width:20px;height:20px;accent-color:var(--orange)}
@@ -187,6 +193,7 @@ img{max-width:100%;display:block}
         <h3>유의사항</h3>
         <p>· 본 이벤트는 KICET 공식 인스타그램에서 진행되며, 누구나 참여할 수 있어요.<br>
         · 이벤트 기간: 2026.08.01 – 08.31 / 당첨자 발표: 9월 초 인스타그램 DM 개별 안내<br>
+        · 응모 시 이벤트 게시물에 ‘참여완료’ 댓글을 남긴 화면 캡쳐를 첨부해야 해요.<br>
         · 인스타그램 팔로우를 완료한 참여자는 당첨 확률이 올라가요.<br>
         · 경품은 응모 시 입력한 연락처로 모바일 발송되며, 잘못 기재된 정보로 인한 미수령은 책임지지 않아요.<br>
         · 중복 응모, 허위 정보 기재 등 부정 참여가 확인되면 당첨이 취소될 수 있어요.<br>
@@ -269,9 +276,16 @@ img{max-width:100%;display:block}
     <div class="m-sheet">
       <button class="m-close" onclick="closeModal()">✕</button>
       <h2>🎁 경품 응모하기</h2>
-      <p class="ms">닉네임과 연락처만 입력하면 끝!</p>
+      <p class="ms">‘참여완료’ 댓글 캡쳐와 함께 응모해 주세요!</p>
       <div class="field"><label>닉네임</label><input id="fName" placeholder="닉네임을 입력해 주세요"></div>
       <div class="field"><label>연락처</label><input id="fPhone" placeholder="010-0000-0000" inputmode="tel"></div>
+      <div class="field"><label>참여 인증 캡쳐</label>
+        <div class="upload" onclick="document.getElementById('fUpload').click()">
+          <input type="file" id="fUpload" accept="image/*" hidden onchange="onCapture(this)">
+          <div id="upEmpty">📷 캡쳐 이미지 올리기<br><small>이벤트 게시물에 ‘참여완료’ 댓글을 달고 캡쳐해 주세요</small></div>
+          <img id="upPreview" alt="캡쳐 미리보기" style="display:none">
+        </div>
+      </div>
       <div class="agree"><input type="checkbox" id="fAgree"><label for="fAgree">[필수] 개인정보 수집·이용 동의</label>&nbsp;<a href="#" onclick="alert('개인정보 수집·이용 안내\n· 수집 항목: 닉네임, 연락처\n· 이용 목적: 경품 추첨 및 발송\n· 보유 기간: 경품 발송 완료 후 즉시 파기');return false">보기</a></div>
       <div class="follow">
         <label><input type="checkbox" id="fFollow"> KICET 인스타그램 팔로우 완료!</label>
@@ -458,6 +472,24 @@ function wrap(x, text, cx, y, maxW, lh){
 }
 
 /* ================= 응모 ================= */
+let captureData = null;
+function onCapture(input){
+  const file = input.files && input.files[0];
+  if(!file) return;
+  const img = new Image();
+  img.onload = ()=>{
+    const MAX = 800, ratio = Math.min(1, MAX/Math.max(img.width, img.height));
+    const cv = document.createElement('canvas');
+    cv.width = Math.round(img.width*ratio); cv.height = Math.round(img.height*ratio);
+    cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
+    captureData = cv.toDataURL('image/jpeg', 0.72);
+    URL.revokeObjectURL(img.src);
+    const pv = document.getElementById('upPreview');
+    pv.src = captureData; pv.style.display = 'block';
+    document.getElementById('upEmpty').style.display = 'none';
+  };
+  img.src = URL.createObjectURL(file);
+}
 function openModal(){ document.getElementById('modal').classList.add('open'); }
 function closeModal(){ document.getElementById('modal').classList.remove('open'); }
 function submitEntry(){
@@ -465,9 +497,10 @@ function submitEntry(){
   const phone = document.getElementById('fPhone').value.trim();
   if(!name){ alert('닉네임을 입력해 주세요!'); return; }
   if(!/^01[0-9]-?\d{3,4}-?\d{4}$/.test(phone)){ alert('연락처를 확인해 주세요! (예: 010-1234-5678)'); return; }
+  if(!captureData){ alert('‘참여완료’ 댓글 캡쳐 이미지를 올려 주세요!'); return; }
   if(!document.getElementById('fAgree').checked){ alert('개인정보 수집·이용 동의가 필요해요!'); return; }
   const entry = { name, phone, follow: document.getElementById('fFollow').checked,
-    type: currentType, temp: RESULTS[currentType].temp, at: new Date().toISOString() };
+    capture: captureData, type: currentType, temp: RESULTS[currentType].temp, at: new Date().toISOString() };
   /* TODO 운영 배포 시: Supabase insert로 교체
      await supabase.from('entries').insert(entry) */
   const list = JSON.parse(localStorage.getItem('kicet_entries')||'[]');
