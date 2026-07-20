@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>응모 현황 관리 | KICET 멘탈 내열 테스트</title>
+<meta name="robots" content="noindex, nofollow">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{ --orange:#FF7A1A; --blue:#1D5DE0; --navy:#0B1030; --dark:#1A1D26;
+  --gray:#6B7687; --line:#E5EAF3; --soft:#F7F9FC; }
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Noto Sans KR',sans-serif;background:#EEF2F9;color:var(--dark);min-height:100vh}
+.wrap{max-width:1100px;margin:0 auto;padding:32px 20px 60px}
+h1{font-size:22px;font-weight:900}
+h1 small{color:var(--gray);font-size:13px;font-weight:500;margin-left:10px}
+button{font-family:inherit;border:none;cursor:pointer;border-radius:10px}
+.btn{background:var(--orange);color:#fff;font-weight:700;font-size:14px;padding:11px 18px}
+.btn.ghost{background:#fff;color:var(--blue);border:1.5px solid var(--blue)}
+.btn.gray{background:#fff;color:var(--gray);border:1.5px solid var(--line)}
+.btn:active{transform:scale(.97)}
+
+/* 게이트 */
+#gate{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
+.gate-card{background:#fff;border-radius:20px;padding:36px 32px;max-width:440px;width:100%;
+  box-shadow:0 14px 40px rgba(20,40,90,.12)}
+.gate-card h1{margin-bottom:6px}
+.gate-card p{color:var(--gray);font-size:13px;line-height:1.6;margin-bottom:18px}
+.gate-card label{display:block;font-size:13px;font-weight:700;margin:12px 0 6px}
+.gate-card input{width:100%;height:46px;border:1.5px solid var(--line);border-radius:10px;
+  padding:0 14px;font-size:14px;font-family:inherit;background:var(--soft)}
+.gate-card input:focus{outline:none;border-color:var(--orange);background:#fff}
+.gate-card .btn{width:100%;height:48px;margin-top:18px}
+.gate-card .demo{margin-top:10px;width:100%;height:44px}
+.gate-note{font-size:11px;color:#98A2B5;margin-top:14px;line-height:1.6}
+
+/* 대시보드 */
+#dash{display:none}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:20px}
+.topbar .actions{display:flex;gap:8px;flex-wrap:wrap}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:16px}
+.stat{background:#fff;border-radius:16px;padding:18px 20px;border:1px solid var(--line)}
+.stat .k{color:var(--gray);font-size:12px;font-weight:500}
+.stat .v{font-size:26px;font-weight:900;margin-top:4px}
+.stat .v em{font-style:normal;color:var(--orange)}
+.types{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:16px}
+.type-card{background:#fff;border-radius:16px;padding:14px 18px;border:1px solid var(--line)}
+.type-card .t{font-size:13px;font-weight:700}
+.type-card .bar{height:8px;background:#EDF1F8;border-radius:99px;margin-top:8px;overflow:hidden}
+.type-card .bar i{display:block;height:100%;background:var(--orange);border-radius:99px}
+.type-card .n{color:var(--gray);font-size:12px;margin-top:6px}
+
+.panel{background:#fff;border-radius:16px;border:1px solid var(--line);padding:18px 20px;margin-bottom:16px}
+.panel h2{font-size:15px;font-weight:700;margin-bottom:12px}
+.draw-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.draw-row input[type=number]{width:80px;height:42px;border:1.5px solid var(--line);border-radius:10px;
+  padding:0 12px;font-size:14px;font-family:inherit}
+.draw-row label{font-size:13px;color:var(--gray);display:flex;align-items:center;gap:6px}
+#winners{margin-top:12px;font-size:14px;line-height:1.9}
+#winners b{color:var(--orange)}
+
+table{width:100%;border-collapse:collapse;background:#fff;border-radius:16px;overflow:hidden;
+  border:1px solid var(--line);font-size:13px}
+th{background:var(--soft);color:var(--gray);font-weight:700;text-align:left;padding:12px 14px;white-space:nowrap}
+td{padding:10px 14px;border-top:1px solid var(--line);vertical-align:middle}
+tr.winner td{background:#FFF4E8}
+.thumb{width:52px;height:52px;object-fit:cover;border-radius:8px;cursor:pointer;background:#EDF1F8;border:1px solid var(--line)}
+.tag{display:inline-block;border-radius:99px;padding:3px 10px;font-size:11px;font-weight:700}
+.tag.f{background:#E9F8EE;color:#1B9E4B}.tag.nf{background:#F1F3F8;color:#98A2B5}
+.empty{padding:44px;text-align:center;color:var(--gray);font-size:14px}
+
+/* 캡쳐 확대 */
+#viewer{position:fixed;inset:0;background:rgba(10,15,35,.8);display:none;
+  align-items:center;justify-content:center;z-index:50;cursor:zoom-out}
+#viewer.open{display:flex}
+#viewer img{max-width:90vw;max-height:88vh;border-radius:12px;background:#fff}
+.mode-badge{display:inline-block;background:#FFF4E8;color:var(--orange);border-radius:99px;
+  padding:4px 12px;font-size:11px;font-weight:700;margin-left:8px}
+</style>
+</head>
+<body>
+
+<!-- 접근 게이트 -->
+<div id="gate">
+  <div class="gate-card">
+    <h1>🔐 응모 현황 관리</h1>
+    <p>KICET 멘탈 내열 테스트 이벤트의 응모 데이터를 조회하는 관리자 전용 페이지입니다.</p>
+    <label>Supabase 프로젝트 URL</label>
+    <input id="gUrl" placeholder="https://xxxx.supabase.co">
+    <label>Service Role 키 (관리자 키)</label>
+    <input id="gKey" type="password" placeholder="service_role 키를 붙여넣어 주세요">
+    <button class="btn" onclick="connect()">응모 현황 열기</button>
+    <button class="btn gray demo" onclick="demoMode()">🧪 로컬 데모 데이터로 미리보기</button>
+    <p class="gate-note">· 키는 이 브라우저 탭에만 임시 저장되며 코드나 서버에 남지 않아요.<br>
+    · Service Role 키는 Supabase 대시보드 → Settings → API에서 복사할 수 있어요. 외부에 공유 금지!</p>
+  </div>
+</div>
+
+<!-- 대시보드 -->
+<div id="dash"><div class="wrap">
+  <div class="topbar">
+    <h1>🎁 응모 현황<span id="modeBadge"></span><small id="updatedAt"></small></h1>
+    <div class="actions">
+      <button class="btn ghost" onclick="loadData()">↻ 새로고침</button>
+      <button class="btn ghost" onclick="downloadCSV()">⬇ CSV 다운로드</button>
+      <button class="btn gray" onclick="logout()">잠그기</button>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><div class="k">총 응모</div><div class="v" id="sTotal">0<em>명</em></div></div>
+    <div class="stat"><div class="k">오늘 응모</div><div class="v" id="sToday">0<em>명</em></div></div>
+    <div class="stat"><div class="k">팔로우 체크</div><div class="v" id="sFollow">0%</div></div>
+    <div class="stat"><div class="k">캡쳐 첨부</div><div class="v" id="sCapture">0%</div></div>
+  </div>
+
+  <div class="types" id="typeCards"></div>
+
+  <div class="panel">
+    <h2>🎲 당첨자 추첨</h2>
+    <div class="draw-row">
+      <input type="number" id="drawN" value="1" min="1"> <span style="font-size:13px">명 추첨</span>
+      <label><input type="checkbox" id="drawFollow"> 팔로우 체크한 응모자만</label>
+      <button class="btn" onclick="draw()">추첨하기</button>
+    </div>
+    <div id="winners"></div>
+  </div>
+
+  <div style="overflow-x:auto">
+  <table>
+    <thead><tr>
+      <th>응모 시각</th><th>닉네임</th><th>연락처</th><th>결과 유형</th><th>팔로우</th><th>인증 캡쳐</th>
+    </tr></thead>
+    <tbody id="rows"></tbody>
+  </table>
+  </div>
+  <div class="empty" id="empty" style="display:none">아직 응모 내역이 없어요</div>
+</div></div>
+
+<div id="viewer" onclick="this.classList.remove('open')"><img id="viewerImg"></div>
+
+<script>
+const TYPE_META = {
+  uju:   { label: '🚀 1,600℃ 극한 멘탈' },
+  phone: { label: '📱 1,200℃ 정밀 멘탈' },
+  jubang:{ label: '🍳 400℃ 생활 맷집' },
+  momsok:{ label: '💊 37℃ 회복 멘탈' }
+};
+let CFG = null;          // {url, key} — Supabase 모드
+let DEMO = false;
+let DATA = [];           // 정규화된 응모 목록
+let lastWinners = new Set();
+
+/* ---------- 접속 ---------- */
+function connect(){
+  const url = document.getElementById('gUrl').value.trim().replace(/\/$/, '');
+  const key = document.getElementById('gKey').value.trim();
+  if(!/^https:\/\/.+supabase\.co$/.test(url)){ alert('Supabase URL을 확인해 주세요'); return; }
+  if(key.length < 30){ alert('Service Role 키를 확인해 주세요'); return; }
+  CFG = { url, key }; DEMO = false;
+  sessionStorage.setItem('kicet_admin', JSON.stringify(CFG));
+  enter(); loadData();
+}
+function demoMode(){
+  CFG = null; DEMO = true;
+  enter(); loadData();
+}
+function enter(){
+  document.getElementById('gate').style.display = 'none';
+  document.getElementById('dash').style.display = 'block';
+  document.getElementById('modeBadge').innerHTML = DEMO ? '<span class="mode-badge">로컬 데모 모드</span>' : '';
+}
+function logout(){
+  sessionStorage.removeItem('kicet_admin');
+  location.reload();
+}
+// 세션에 키가 남아 있으면 자동 접속
+const saved = sessionStorage.getItem('kicet_admin');
+if(saved){ CFG = JSON.parse(saved); enter(); loadData(); }
+
+/* ---------- 데이터 로드 ---------- */
+async function loadData(){
+  try{
+    if(DEMO){
+      const raw = JSON.parse(localStorage.getItem('kicet_entries')||'[]');
+      DATA = raw.map(e => ({ at: e.at, name: e.name, phone: e.phone, follow: !!e.follow,
+        type: e.type, temp: e.temp, thumb: e.capture || null })).reverse();
+    } else {
+      const H = { Authorization: 'Bearer ' + CFG.key, apikey: CFG.key };
+      const res = await fetch(CFG.url + '/rest/v1/entries?select=*&order=created_at.desc', { headers: H });
+      if(!res.ok) throw new Error('조회 실패 (' + res.status + ') — 키와 URL을 확인해 주세요');
+      const rows = await res.json();
+      DATA = rows.map(r => ({ at: r.created_at, name: r.name, phone: r.phone, follow: !!r.follow,
+        type: r.type, temp: r.temp, path: r.capture_path, thumb: null }));
+      // 비공개 버킷 캡쳐 → 1시간짜리 서명 URL 발급
+      await Promise.all(DATA.filter(d => d.path).map(async d => {
+        try{
+          const s = await fetch(CFG.url + '/storage/v1/object/sign/captures/' + d.path, {
+            method: 'POST',
+            headers: { ...H, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ expiresIn: 3600 })
+          });
+          if(s.ok){ const j = await s.json(); d.thumb = CFG.url + '/storage/v1' + j.signedURL; }
+        }catch(e){}
+      }));
+    }
+    render();
+  }catch(e){ alert(e.message || '데이터를 불러오지 못했어요'); }
+}
+
+/* ---------- 렌더 ---------- */
+function render(){
+  const total = DATA.length;
+  const today = new Date().toDateString();
+  const todayN = DATA.filter(d => new Date(d.at).toDateString() === today).length;
+  const followN = DATA.filter(d => d.follow).length;
+  const capN = DATA.filter(d => d.thumb || d.path).length;
+  document.getElementById('sTotal').innerHTML = total + '<em>명</em>';
+  document.getElementById('sToday').innerHTML = todayN + '<em>명</em>';
+  document.getElementById('sFollow').textContent = total ? Math.round(followN/total*100) + '%' : '0%';
+  document.getElementById('sCapture').textContent = total ? Math.round(capN/total*100) + '%' : '0%';
+  document.getElementById('updatedAt').textContent = '업데이트 ' + new Date().toLocaleTimeString('ko-KR');
+
+  // 유형 분포
+  const tc = document.getElementById('typeCards'); tc.innerHTML = '';
+  for(const [k, m] of Object.entries(TYPE_META)){
+    const n = DATA.filter(d => d.type === k).length;
+    const pct = total ? Math.round(n/total*100) : 0;
+    tc.insertAdjacentHTML('beforeend',
+      `<div class="type-card"><div class="t">${m.label}</div>
+       <div class="bar"><i style="width:${pct}%"></i></div>
+       <div class="n">${n}명 · ${pct}%</div></div>`);
+  }
+
+  // 테이블
+  const tb = document.getElementById('rows'); tb.innerHTML = '';
+  DATA.forEach((d, i) => {
+    const t = new Date(d.at);
+    const time = `${t.getMonth()+1}/${t.getDate()} ${String(t.getHours()).padStart(2,'0')}:${String(t.getMinutes()).padStart(2,'0')}`;
+    const cap = d.thumb
+      ? `<img class="thumb" src="${d.thumb}" onclick="viewCap('${encodeURIComponent(d.thumb)}')" alt="캡쳐">`
+      : '<span style="color:#98A2B5">없음</span>';
+    tb.insertAdjacentHTML('beforeend',
+      `<tr class="${lastWinners.has(d.phone) ? 'winner' : ''}">
+        <td>${time}</td><td><b>${esc(d.name)}</b></td><td>${esc(d.phone)}</td>
+        <td>${TYPE_META[d.type] ? TYPE_META[d.type].label : (d.temp||'-')}</td>
+        <td>${d.follow ? '<span class="tag f">팔로우</span>' : '<span class="tag nf">미체크</span>'}</td>
+        <td>${cap}</td></tr>`);
+  });
+  document.getElementById('empty').style.display = total ? 'none' : 'block';
+}
+function esc(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function viewCap(u){
+  document.getElementById('viewerImg').src = decodeURIComponent(u);
+  document.getElementById('viewer').classList.add('open');
+}
+
+/* ---------- 추첨 ---------- */
+function draw(){
+  const n = Math.max(1, parseInt(document.getElementById('drawN').value)||1);
+  let pool = document.getElementById('drawFollow').checked ? DATA.filter(d => d.follow) : DATA.slice();
+  if(!pool.length){ alert('추첨 대상이 없어요!'); return; }
+  const winners = [];
+  while(winners.length < Math.min(n, pool.length)){
+    const i = Math.floor(Math.random() * pool.length);
+    winners.push(pool.splice(i, 1)[0]);
+  }
+  lastWinners = new Set(winners.map(w => w.phone));
+  document.getElementById('winners').innerHTML = '🎉 당첨: ' +
+    winners.map(w => `<b>${esc(w.name)}</b> (${esc(w.phone)})`).join(' · ');
+  render();
+}
+
+/* ---------- CSV ---------- */
+function downloadCSV(){
+  const head = ['응모시각','닉네임','연락처','결과유형','온도','팔로우','캡쳐'];
+  const lines = [head.join(',')].concat(DATA.map(d =>
+    [new Date(d.at).toLocaleString('ko-KR'), d.name, d.phone,
+     (TYPE_META[d.type] ? TYPE_META[d.type].label.replace(/^\S+\s/,'') : ''), d.temp||'',
+     d.follow ? 'Y' : 'N', (d.path || (d.thumb ? '첨부' : ''))].map(v => '"' + String(v).replace(/"/g,'""') + '"').join(',')));
+  const blob = new Blob(['﻿' + lines.join('\n')], { type: 'text/csv;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'kicet-entries-' + new Date().toISOString().slice(0,10) + '.csv';
+  a.click();
+}
+</script>
+</body>
+</html>

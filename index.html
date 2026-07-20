@@ -492,19 +492,47 @@ function onCapture(input){
 }
 function openModal(){ document.getElementById('modal').classList.add('open'); }
 function closeModal(){ document.getElementById('modal').classList.remove('open'); }
-function submitEntry(){
+
+/* 운영 배포 시 Supabase 프로젝트 정보 입력 → 자동으로 DB 저장 모드로 전환
+   (비워두면 브라우저 localStorage에만 저장되는 데모 모드) */
+const SUPABASE = { url: '', anonKey: '' };
+
+async function submitEntry(){
   const name = document.getElementById('fName').value.trim();
   const phone = document.getElementById('fPhone').value.trim();
   if(!name){ alert('닉네임을 입력해 주세요!'); return; }
   if(!/^01[0-9]-?\d{3,4}-?\d{4}$/.test(phone)){ alert('연락처를 확인해 주세요! (예: 010-1234-5678)'); return; }
   if(!captureData){ alert('‘참여완료’ 댓글 캡쳐 이미지를 올려 주세요!'); return; }
   if(!document.getElementById('fAgree').checked){ alert('개인정보 수집·이용 동의가 필요해요!'); return; }
-  const entry = { name, phone, follow: document.getElementById('fFollow').checked,
-    capture: captureData, type: currentType, temp: RESULTS[currentType].temp, at: new Date().toISOString() };
-  /* TODO 운영 배포 시: Supabase insert로 교체
-     await supabase.from('entries').insert(entry) */
-  const list = JSON.parse(localStorage.getItem('kicet_entries')||'[]');
-  list.push(entry); localStorage.setItem('kicet_entries', JSON.stringify(list));
+  const follow = document.getElementById('fFollow').checked;
+
+  if(SUPABASE.url && SUPABASE.anonKey){
+    const H = { Authorization: 'Bearer ' + SUPABASE.anonKey, apikey: SUPABASE.anonKey };
+    try{
+      // 1) 캡쳐 이미지 → Storage 업로드 (비공개 버킷)
+      const path = Date.now() + '-' + Math.random().toString(36).slice(2) + '.jpg';
+      const blob = await (await fetch(captureData)).blob();
+      let res = await fetch(SUPABASE.url + '/storage/v1/object/captures/' + path,
+        { method: 'POST', headers: { ...H, 'Content-Type': 'image/jpeg' }, body: blob });
+      if(!res.ok) throw new Error('storage ' + res.status);
+      // 2) 응모 정보 insert
+      res = await fetch(SUPABASE.url + '/rest/v1/entries', {
+        method: 'POST',
+        headers: { ...H, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+        body: JSON.stringify({ name, phone, follow, type: currentType,
+          temp: RESULTS[currentType].temp, capture_path: path })
+      });
+      if(res.status === 409){ alert('이미 응모한 연락처예요! 한 번만 응모할 수 있어요.'); return; }
+      if(!res.ok) throw new Error('insert ' + res.status);
+    }catch(e){
+      alert('응모 저장에 실패했어요. 잠시 후 다시 시도해 주세요.'); return;
+    }
+  } else {
+    const entry = { name, phone, follow, capture: captureData,
+      type: currentType, temp: RESULTS[currentType].temp, at: new Date().toISOString() };
+    const list = JSON.parse(localStorage.getItem('kicet_entries')||'[]');
+    list.push(entry); localStorage.setItem('kicet_entries', JSON.stringify(list));
+  }
   closeModal(); show('done');
 }
 </script>
