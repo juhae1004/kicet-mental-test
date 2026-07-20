@@ -26,3 +26,12 @@ insert into storage.buckets (id, name, public)
 
 create policy "anon upload captures" on storage.objects
   for insert to anon with check (bucket_id = 'captures');
+
+-- 3) 관리자 조회 권한 (admin.html은 Authentication 관리자 계정 로그인 방식)
+--    ※ 새 Supabase의 Secret 키는 브라우저에서 401을 반환하도록 설계되어 있어
+--       관리자 페이지는 이메일 로그인(authenticated 역할)으로 조회한다.
+create policy "admin read entries" on entries
+  for select to authenticated using (true);
+
+create policy "admin read captures" on storage.objects
+  for select to authenticated using (bucket_id = 'captures');

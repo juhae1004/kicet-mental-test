@@ -85,14 +85,14 @@ tr.winner td{background:#FFF4E8}
   <div class="gate-card">
     <h1>🔐 응모 현황 관리</h1>
     <p>KICET 멘탈 내열 테스트 이벤트의 응모 데이터를 조회하는 관리자 전용 페이지입니다.</p>
-    <label>Supabase 프로젝트 URL</label>
-    <input id="gUrl" placeholder="https://xxxx.supabase.co">
-    <label>관리자 키 (Secret key 또는 service_role)</label>
-    <input id="gKey" type="password" placeholder="sb_secret_... 또는 service_role 키">
-    <button class="btn" onclick="connect()">응모 현황 열기</button>
+    <label>관리자 이메일</label>
+    <input id="gEmail" type="email" placeholder="admin@example.com">
+    <label>비밀번호</label>
+    <input id="gPw" type="password" placeholder="관리자 계정 비밀번호">
+    <button class="btn" onclick="connect()">로그인하고 응모 현황 열기</button>
     <button class="btn gray demo" onclick="demoMode()">🧪 로컬 데모 데이터로 미리보기</button>
-    <p class="gate-note">· 키는 이 브라우저 탭에만 임시 저장되며 코드나 서버에 남지 않아요.<br>
-    · 관리자 키는 Supabase 대시보드 → Settings → API Keys의 Secret keys에서 복사할 수 있어요. 외부에 공유 금지!</p>
+    <p class="gate-note">· Supabase 대시보드 → Authentication → Users에 등록된 관리자 계정으로 로그인해요.<br>
+    · 로그인 상태는 이 브라우저 탭에만 유지되며 탭을 닫으면 사라져요.</p>
   </div>
 </div>
 
@@ -146,21 +146,32 @@ const TYPE_META = {
   jubang:{ label: '🍳 400℃ 생활 맷집' },
   momsok:{ label: '💊 37℃ 회복 멘탈' }
 };
-let CFG = null;          // {url, key} — Supabase 모드
+const PUB = {
+  url: 'https://aywniebhpkwbxravwwbb.supabase.co',
+  key: 'sb_publishable_fNcEkqwukF1LzrXp6jqZww_lDgYNhO7'
+};
+let CFG = null;          // {token} — 로그인된 관리자 세션
 let DEMO = false;
 let DATA = [];           // 정규화된 응모 목록
 let lastWinners = new Set();
 
-/* ---------- 접속 ---------- */
-function connect(){
-  let url = document.getElementById('gUrl').value.trim().replace(/\/(rest|storage)\/v1\/?$/, '').replace(/\/+$/, '');
-  const key = document.getElementById('gKey').value.trim().replace(/\s+/g, '');
-  if(!/^https:\/\/.+supabase\.co$/.test(url)){ alert('Supabase URL을 확인해 주세요 (https://xxxx.supabase.co 형태)'); return; }
-  if(key.startsWith('sb_publishable_')){ alert('그 키는 공개용(Publishable) 키예요.\nSecret keys 섹션의 sb_secret_... 키가 필요합니다.'); return; }
-  if(key.length < 30){ alert('키가 너무 짧아요 — Reveal(눈 모양)을 누른 뒤 전체를 복사했는지 확인해 주세요'); return; }
-  CFG = { url, key }; DEMO = false;
-  sessionStorage.setItem('kicet_admin', JSON.stringify(CFG));
-  enter(); loadData();
+/* ---------- 접속 (관리자 로그인) ---------- */
+async function connect(){
+  const email = document.getElementById('gEmail').value.trim();
+  const pw = document.getElementById('gPw').value;
+  if(!email || !pw){ alert('이메일과 비밀번호를 입력해 주세요'); return; }
+  try{
+    const res = await fetch(PUB.url + '/auth/v1/token?grant_type=password', {
+      method: 'POST',
+      headers: { apikey: PUB.key, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password: pw })
+    });
+    if(!res.ok){ alert('로그인 실패 — 이메일과 비밀번호를 확인해 주세요'); return; }
+    const j = await res.json();
+    CFG = { token: j.access_token }; DEMO = false;
+    sessionStorage.setItem('kicet_admin', JSON.stringify(CFG));
+    enter(); loadData();
+  }catch(e){ alert('접속에 실패했어요 — 네트워크를 확인해 주세요'); }
 }
 function demoMode(){
   CFG = null; DEMO = true;
@@ -187,34 +198,22 @@ async function loadData(){
       DATA = raw.map(e => ({ at: e.at, name: e.name, phone: e.phone, follow: !!e.follow,
         type: e.type, temp: e.temp, thumb: e.capture || null })).reverse();
     } else {
-      // 키 형식(신형 sb_secret / 구형 JWT)에 따라 헤더 조합을 자동으로 시도
-      const combos = [
-        { apikey: CFG.key, Authorization: 'Bearer ' + CFG.key },
-        { apikey: CFG.key }
-      ];
-      let res = null, H = null;
-      for (const h of combos) {
-        res = await fetch(CFG.url + '/rest/v1/entries?select=*&order=created_at.desc', { headers: h });
-        if (res.ok) { H = h; break; }
-      }
-      if(!res.ok){
-        const body = await res.text().catch(() => '');
-        throw new Error('조회 실패 (' + res.status + ')\n' +
-          (res.status === 401 ? '키가 유효하지 않아요. Secret keys 섹션에서 sb_secret_... 키를 새로 만들어 복사했는지 확인해 주세요.' :
-           res.status === 403 ? '권한이 없는 키예요. Secret(관리자) 키인지 확인해 주세요.' : body.slice(0, 120)));
-      }
+      const H = { apikey: PUB.key, Authorization: 'Bearer ' + CFG.token };
+      const res = await fetch(PUB.url + '/rest/v1/entries?select=*&order=created_at.desc', { headers: H });
+      if(res.status === 401){ logout(); return; } // 세션 만료 → 재로그인
+      if(!res.ok) throw new Error('조회 실패 (' + res.status + ')');
       const rows = await res.json();
       DATA = rows.map(r => ({ at: r.created_at, name: r.name, phone: r.phone, follow: !!r.follow,
         type: r.type, temp: r.temp, path: r.capture_path, thumb: null }));
       // 비공개 버킷 캡쳐 → 1시간짜리 서명 URL 발급
       await Promise.all(DATA.filter(d => d.path).map(async d => {
         try{
-          const s = await fetch(CFG.url + '/storage/v1/object/sign/captures/' + d.path, {
+          const s = await fetch(PUB.url + '/storage/v1/object/sign/captures/' + d.path, {
             method: 'POST',
             headers: { ...H, 'Content-Type': 'application/json' },
             body: JSON.stringify({ expiresIn: 3600 })
           });
-          if(s.ok){ const j = await s.json(); d.thumb = CFG.url + '/storage/v1' + j.signedURL; }
+          if(s.ok){ const j = await s.json(); d.thumb = PUB.url + '/storage/v1' + j.signedURL; }
         }catch(e){}
       }));
     }
