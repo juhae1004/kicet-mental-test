@@ -153,10 +153,11 @@ let lastWinners = new Set();
 
 /* ---------- 접속 ---------- */
 function connect(){
-  const url = document.getElementById('gUrl').value.trim().replace(/\/$/, '');
-  const key = document.getElementById('gKey').value.trim();
-  if(!/^https:\/\/.+supabase\.co$/.test(url)){ alert('Supabase URL을 확인해 주세요'); return; }
-  if(key.length < 30){ alert('Service Role 키를 확인해 주세요'); return; }
+  let url = document.getElementById('gUrl').value.trim().replace(/\/(rest|storage)\/v1\/?$/, '').replace(/\/+$/, '');
+  const key = document.getElementById('gKey').value.trim().replace(/\s+/g, '');
+  if(!/^https:\/\/.+supabase\.co$/.test(url)){ alert('Supabase URL을 확인해 주세요 (https://xxxx.supabase.co 형태)'); return; }
+  if(key.startsWith('sb_publishable_')){ alert('그 키는 공개용(Publishable) 키예요.\nSecret keys 섹션의 sb_secret_... 키가 필요합니다.'); return; }
+  if(key.length < 30){ alert('키가 너무 짧아요 — Reveal(눈 모양)을 누른 뒤 전체를 복사했는지 확인해 주세요'); return; }
   CFG = { url, key }; DEMO = false;
   sessionStorage.setItem('kicet_admin', JSON.stringify(CFG));
   enter(); loadData();
@@ -186,10 +187,22 @@ async function loadData(){
       DATA = raw.map(e => ({ at: e.at, name: e.name, phone: e.phone, follow: !!e.follow,
         type: e.type, temp: e.temp, thumb: e.capture || null })).reverse();
     } else {
-      const H = { apikey: CFG.key };
-      if(CFG.key.startsWith('eyJ')) H.Authorization = 'Bearer ' + CFG.key;
-      const res = await fetch(CFG.url + '/rest/v1/entries?select=*&order=created_at.desc', { headers: H });
-      if(!res.ok) throw new Error('조회 실패 (' + res.status + ') — 키와 URL을 확인해 주세요');
+      // 키 형식(신형 sb_secret / 구형 JWT)에 따라 헤더 조합을 자동으로 시도
+      const combos = [
+        { apikey: CFG.key, Authorization: 'Bearer ' + CFG.key },
+        { apikey: CFG.key }
+      ];
+      let res = null, H = null;
+      for (const h of combos) {
+        res = await fetch(CFG.url + '/rest/v1/entries?select=*&order=created_at.desc', { headers: h });
+        if (res.ok) { H = h; break; }
+      }
+      if(!res.ok){
+        const body = await res.text().catch(() => '');
+        throw new Error('조회 실패 (' + res.status + ')\n' +
+          (res.status === 401 ? '키가 유효하지 않아요. Secret keys 섹션에서 sb_secret_... 키를 새로 만들어 복사했는지 확인해 주세요.' :
+           res.status === 403 ? '권한이 없는 키예요. Secret(관리자) 키인지 확인해 주세요.' : body.slice(0, 120)));
+      }
       const rows = await res.json();
       DATA = rows.map(r => ({ at: r.created_at, name: r.name, phone: r.phone, follow: !!r.follow,
         type: r.type, temp: r.temp, path: r.capture_path, thumb: null }));
