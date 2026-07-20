@@ -277,7 +277,7 @@ img{max-width:100%;display:block}
       <button class="m-close" onclick="closeModal()">✕</button>
       <h2>🎁 경품 응모하기</h2>
       <p class="ms">‘참여완료’ 댓글 캡쳐와 함께 응모해 주세요!</p>
-      <div class="field"><label>닉네임</label><input id="fName" placeholder="닉네임을 입력해 주세요"></div>
+      <div class="field"><label>인스타그램 아이디</label><input id="fName" placeholder="@ 없이 아이디만 입력 (예: kicet_fan)"></div>
       <div class="field"><label>연락처</label><input id="fPhone" placeholder="010-0000-0000" inputmode="tel"></div>
       <div class="field"><label>참여 인증 캡쳐</label>
         <div class="upload" onclick="document.getElementById('fUpload').click()">
@@ -501,9 +501,9 @@ const SUPABASE = {
 };
 
 async function submitEntry(){
-  const name = document.getElementById('fName').value.trim();
+  const name = document.getElementById('fName').value.trim().replace(/^@/, '');
   const phone = document.getElementById('fPhone').value.trim();
-  if(!name){ alert('닉네임을 입력해 주세요!'); return; }
+  if(!name){ alert('인스타그램 아이디를 입력해 주세요!'); return; }
   if(!/^01[0-9]-?\d{3,4}-?\d{4}$/.test(phone)){ alert('연락처를 확인해 주세요! (예: 010-1234-5678)'); return; }
   if(!captureData){ alert('‘참여완료’ 댓글 캡쳐 이미지를 올려 주세요!'); return; }
   if(!document.getElementById('fAgree').checked){ alert('개인정보 수집·이용 동의가 필요해요!'); return; }

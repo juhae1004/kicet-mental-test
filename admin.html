@@ -140,7 +140,7 @@ tr.winner td{background:#FFF4E8}
   <div style="overflow-x:auto">
   <table>
     <thead><tr>
-      <th>응모 시각</th><th>닉네임</th><th>연락처</th><th>결과 유형</th><th>팔로우</th><th>팔로우 검증</th><th>인증 캡쳐</th>
+      <th>응모 시각</th><th>인스타 아이디</th><th>연락처</th><th>결과 유형</th><th>팔로우</th><th>팔로우 검증</th><th>인증 캡쳐</th>
     </tr></thead>
     <tbody id="rows"></tbody>
   </table>
@@ -278,7 +278,7 @@ function render(){
     }
     tb.insertAdjacentHTML('beforeend',
       `<tr class="${lastWinners.has(d.phone) ? 'winner' : ''}">
-        <td>${time}</td><td><b>${esc(d.name)}</b></td><td>${esc(d.phone)}</td>
+        <td>${time}</td><td><b>@${esc(d.name)}</b></td><td>${esc(d.phone)}</td>
         <td>${TYPE_META[d.type] ? TYPE_META[d.type].label : (d.temp||'-')}</td>
         <td>${d.follow ? '<span class="tag f">팔로우</span>' : '<span class="tag nf">미체크</span>'}</td>
         <td style="white-space:nowrap">${vCell}</td>
@@ -338,7 +338,7 @@ function draw(){
 
 /* ---------- CSV ---------- */
 function downloadCSV(){
-  const head = ['응모시각','닉네임','연락처','결과유형','온도','팔로우','팔로우검증','캡쳐'];
+  const head = ['응모시각','인스타아이디','연락처','결과유형','온도','팔로우','팔로우검증','캡쳐'];
   const lines = [head.join(',')].concat(DATA.map(d =>
     [new Date(d.at).toLocaleString('ko-KR'), d.name, d.phone,
      (TYPE_META[d.type] ? TYPE_META[d.type].label.replace(/^\S+\s/,'') : ''), d.temp||'',
