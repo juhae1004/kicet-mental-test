@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>내 멘탈은 몇 도까지 버틸까? | KICET 멘탈 내열 테스트</title>
+<meta property="og:title" content="내 멘탈은 몇 도까지 버틸까?">
+<meta property="og:description" content="스트레스 상황 6문항으로 알아보는 나의 멘탈 내열 온도 테스트 · 참여만 해도 경품 추첨 기회!">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=Black+Han+Sans&display=swap" rel="stylesheet">
+<style>
+:root{
+  --orange:#FF7A1A; --blue:#1D5DE0; --navy:#0B1030;
+  --dark:#1A1D26; --gray:#6B7687; --light-gray:#8A93A3;
+  --bg-blue:#EAF1FF; --card-line:#E5EAF3; --soft:#F7F9FC;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{font-family:'Noto Sans KR',sans-serif;background:#DDE3EE;color:var(--dark)}
+#app{max-width:420px;margin:0 auto;min-height:100dvh;background:#fff;position:relative;overflow-x:hidden}
+.screen{display:none;min-height:100dvh}
+.screen.active{display:block}
+button{font-family:inherit;border:none;cursor:pointer}
+img{max-width:100%;display:block}
+
+/* ---------- 공통 ---------- */
+.cta{width:100%;height:57px;border-radius:14px;background:var(--orange);color:#fff;
+  font-size:17px;font-weight:700;box-shadow:0 6px 24px rgba(255,122,26,.45)}
+.cta:active{transform:scale(.98)}
+
+/* ---------- 01 히어로 ---------- */
+#home{background:var(--navy);color:#fff}
+.hero{position:relative;display:flex;flex-direction:column;align-items:center;
+  padding:56px 24px 48px;min-height:100dvh;overflow:hidden}
+.star{position:absolute;background:#fff;border-radius:50%;animation:tw 3s infinite}
+@keyframes tw{0%,100%{opacity:.55}50%{opacity:.15}}
+.badge{border:1px solid var(--orange);color:var(--orange);border-radius:999px;
+  padding:7px 16px;font-size:12px;font-weight:700;background:rgba(255,122,26,.08);z-index:1}
+.hero h1{font-family:'Black Han Sans',sans-serif;font-weight:400;font-size:42px;line-height:1.25;
+  text-align:center;margin-top:22px;z-index:1}
+.hero h1 .hl{color:var(--orange)}
+.hero .sub{color:#AAB4D4;font-size:14px;line-height:1.6;text-align:center;margin-top:14px;z-index:1}
+.box-wrap{position:relative;width:290px;height:290px;margin:18px 0 6px;z-index:1}
+.box-wrap::before{content:'';position:absolute;inset:-30px;border-radius:50%;
+  background:radial-gradient(circle,rgba(255,122,26,.35),transparent 70%)}
+.box-wrap img{position:relative;animation:float 3.4s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}
+.pill{background:var(--orange);color:#fff;font-size:12px;font-weight:700;
+  border-radius:999px;padding:7px 15px;z-index:1}
+.arrow-hint{color:rgba(255,255,255,.85);font-size:13px;font-weight:500;margin:10px 0 14px;z-index:1}
+.period{color:rgba(170,180,212,.85);font-size:12px;line-height:1.6;text-align:center;margin-top:16px;z-index:1}
+.scroll-more{margin-top:26px;color:#5A6488;font-size:12px;z-index:1}
+
+/* ---------- 경품/유의사항 (히어로 하단) ---------- */
+.prizes{background:#fff;padding:48px 24px 40px;color:var(--dark)}
+.prizes h2{font-size:20px;font-weight:700}
+.prizes .ps{color:var(--gray);font-size:13px;margin:6px 0 16px}
+.prize-card{display:flex;align-items:center;gap:14px;background:var(--soft);
+  border:1px solid var(--card-line);border-radius:16px;padding:16px 18px;margin-bottom:12px}
+.prize-card .ico{width:48px;height:48px;border-radius:12px;background:#fff;
+  display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0}
+.prize-card .rank{color:var(--blue);font-size:12px;font-weight:500}
+.prize-card .name{font-size:16px;font-weight:700}
+.divider{height:1px;background:var(--card-line);margin:18px 0}
+.notes h3{font-size:15px;font-weight:700;margin-bottom:8px}
+.notes p{color:var(--light-gray);font-size:12px;line-height:1.8}
+.footer{color:var(--light-gray);font-size:12px;font-weight:500;text-align:center;margin-top:26px}
+
+/* ---------- 02 테스트 ---------- */
+#quiz{background:var(--soft);padding:24px}
+#quiz.active{display:flex;flex-direction:column}
+.q-top{color:var(--gray);font-size:14px;font-weight:500;padding:16px 0 22px;cursor:pointer}
+.q-num{color:var(--orange);font-weight:700;font-size:14px}
+.q-bar{height:8px;background:#E4E9F2;border-radius:99px;margin:8px 0 26px;overflow:hidden}
+.q-bar i{display:block;height:100%;background:var(--orange);border-radius:99px;transition:width .35s}
+.q-card{background:#fff;border-radius:20px;padding:26px 24px;box-shadow:0 8px 26px rgba(20,40,90,.07)}
+.q-card .ql{color:var(--orange);font-weight:700;font-size:15px}
+.q-card h2{font-size:19px;line-height:1.45;font-weight:700;margin-top:8px}
+.q-card .illust{height:200px;display:flex;justify-content:center;margin-top:10px}
+.q-card .illust img{height:100%;width:auto;object-fit:contain}
+.choice{width:100%;background:#fff;border:1.5px solid #D9E2F2;border-radius:14px;
+  padding:17px 16px;font-size:15px;font-weight:500;color:var(--dark);margin-top:14px;
+  transition:all .15s;text-align:center}
+.choice:active,.choice.sel{border-color:var(--orange);background:#FFF4EA;color:var(--orange);font-weight:700}
+.q-hint{color:var(--light-gray);font-size:12px;text-align:center;margin-top:18px}
+
+/* ---------- 03 로딩 ---------- */
+#loading{background:var(--bg-blue);text-align:center;padding:24px}
+#loading.active{display:flex;flex-direction:column;align-items:center;justify-content:center}
+#loading img{width:190px;animation:pulse 1.2s ease-in-out infinite}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}
+#loading h2{font-size:20px;font-weight:700;margin-top:26px}
+.dots{display:flex;gap:8px;justify-content:center;margin:18px 0}
+.dots i{width:10px;height:10px;border-radius:50%;background:#B9C6E8;animation:dot 1.2s infinite}
+.dots i:nth-child(2){animation-delay:.2s}.dots i:nth-child(3){animation-delay:.4s}
+@keyframes dot{0%,100%{background:#B9C6E8}50%{background:var(--orange)}}
+#loading .wait{color:var(--gray);font-size:13px}
+
+/* ---------- 04 결과 ---------- */
+#result{background:linear-gradient(180deg,var(--bg-blue),#fff 40%);padding:28px 24px 40px}
+.r-label{color:var(--gray);font-size:13px;font-weight:500;text-align:center}
+.r-card{background:#fff;border-radius:24px;padding:28px 24px;margin-top:14px;
+  box-shadow:0 12px 36px rgba(20,40,90,.10);text-align:center}
+.r-char{width:84px;height:84px;border-radius:50%;background:#fff;border:1px solid var(--card-line);
+  margin:0 auto;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.r-char img{width:72%;height:72%;object-fit:contain}
+.r-head{font-size:22px;font-weight:900;line-height:1.45;color:var(--dark);margin-top:14px}
+.r-temp{font-family:'Black Han Sans',sans-serif;font-weight:400;font-size:38px;color:var(--orange);line-height:1.2;margin-top:6px}
+.r-sub{color:var(--blue);font-size:13px;font-weight:500;margin-top:4px}
+.r-fact{background:var(--bg-blue);border-radius:14px;padding:13px 16px;margin-top:16px;
+  color:var(--blue);font-size:12px;font-weight:500;line-height:1.6;text-align:left}
+.r-btns{display:flex;gap:10px;margin-top:18px}
+.r-btns button{flex:1;height:48px;border-radius:14px;background:#fff;
+  border:1.5px solid var(--blue);color:var(--blue);font-size:14px;font-weight:700}
+.r-again{color:var(--light-gray);font-size:12px;text-align:center;margin-top:16px}
+.r-again span{cursor:pointer}
+
+/* ---------- 기술 캐러셀 ---------- */
+.tech{margin-top:36px}
+.tech .t-label{color:var(--gray);font-size:13px;font-weight:500;text-align:center;margin-bottom:14px}
+.carousel{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;
+  padding:4px 2px 10px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.carousel::-webkit-scrollbar{display:none}
+.t-card{flex:0 0 100%;scroll-snap-align:center;background:#fff;border-radius:20px;
+  overflow:hidden;box-shadow:0 10px 30px rgba(20,40,90,.13)}
+.t-card .photo{height:300px;overflow:hidden}
+.t-card .photo img{width:100%;height:100%;object-fit:cover}
+.t-card .copy{padding:18px 22px 22px}
+.t-card .copy h3{font-size:19px;font-weight:700}
+.t-card .copy h3 .hl{color:var(--orange)}
+.t-card .copy p{color:var(--gray);font-size:13px;line-height:1.6;margin-top:6px}
+.c-dots{display:flex;gap:8px;justify-content:center;margin:14px 0 6px}
+.c-dots i{width:8px;height:8px;border-radius:99px;background:#BFCBE5;transition:all .25s}
+.c-dots i.on{width:20px;background:var(--orange)}
+.swipe-hint{color:var(--light-gray);font-size:12px;text-align:center;margin-bottom:20px}
+
+/* ---------- 응모 모달 ---------- */
+#modal{position:fixed;inset:0;background:rgba(15,20,40,.62);display:none;
+  align-items:flex-end;justify-content:center;z-index:50}
+#modal.open{display:flex}
+.m-sheet{background:#fff;border-radius:24px 24px 0 0;padding:28px 24px 34px;width:100%;max-width:420px}
+.m-sheet h2{font-size:20px;font-weight:700}
+.m-sheet .ms{color:var(--gray);font-size:13px;margin:6px 0 18px}
+.field label{display:block;font-size:14px;font-weight:700;margin:14px 0 8px}
+.field input{width:100%;height:52px;border:1.5px solid #D9E2F2;border-radius:12px;
+  padding:0 16px;font-size:15px;font-family:inherit;background:var(--soft)}
+.field input:focus{outline:none;border-color:var(--orange);background:#fff}
+.agree{display:flex;align-items:center;gap:10px;margin-top:16px;font-size:13px}
+.agree a{color:var(--gray)}
+.agree input{width:20px;height:20px;accent-color:var(--orange)}
+.follow{background:#FFF4E8;border-radius:14px;padding:14px 16px;margin-top:14px}
+.follow label{display:flex;align-items:center;gap:10px;font-size:14px;font-weight:700}
+.follow input{width:22px;height:22px;accent-color:var(--orange)}
+.follow p{color:var(--orange);font-size:12px;font-weight:500;margin-top:6px}
+.m-sheet .cta{margin-top:20px}
+.m-close{position:absolute;right:20px;margin-top:-6px;font-size:22px;color:#9AA4B8;background:none}
+
+/* ---------- 06 완료 ---------- */
+#done{background:linear-gradient(180deg,var(--bg-blue),#fff 60%);text-align:center;padding:24px}
+#done.active{display:flex;flex-direction:column;align-items:center;justify-content:center}
+.check{width:112px;height:112px;border-radius:50%;background:var(--orange);
+  display:flex;align-items:center;justify-content:center;box-shadow:0 10px 30px rgba(255,122,26,.4)}
+.check svg{width:52px;height:52px}
+#done h2{font-size:26px;font-weight:900;margin-top:22px}
+#done .d-sub{color:var(--gray);font-size:14px;line-height:1.6;margin-top:10px}
+.d-hint{background:#FFF4E8;border-radius:14px;padding:14px 18px;margin-top:18px;width:100%}
+.d-hint b{font-size:14px}
+.d-hint p{color:var(--orange);font-size:13px;font-weight:500;margin-top:4px}
+#done .cta{margin-top:16px}
+#done .d-back{color:var(--gray);font-size:13px;margin-top:16px;cursor:pointer}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- 01 히어로 + 07 경품/유의사항 -->
+  <section class="screen active" id="home">
+    <div class="hero" id="hero"></div>
+    <div class="prizes">
+      <h2>🎁 경품 안내</h2>
+      <p class="ps">테스트 참여 후 응모까지 완료하면 추첨 대상이 돼요</p>
+      <div class="prize-card"><div class="ico">🏆</div><div><div class="rank">1등 · 1명</div><div class="name">백화점 상품권 5만원</div></div></div>
+      <div class="prize-card"><div class="ico">☕</div><div><div class="rank">2등 · 10명</div><div class="name">스타벅스 아메리카노 기프티콘</div></div></div>
+      <div class="prize-card"><div class="ico">🍩</div><div><div class="rank">3등 · 30명</div><div class="name">편의점 모바일 상품권 5천원</div></div></div>
+      <div class="divider"></div>
+      <div class="notes">
+        <h3>유의사항</h3>
+        <p>· 본 이벤트는 KICET 공식 인스타그램에서 진행되며, 누구나 참여할 수 있어요.<br>
+        · 이벤트 기간: 2026.08.01 – 08.31 / 당첨자 발표: 9월 초 인스타그램 DM 개별 안내<br>
+        · 인스타그램 팔로우를 완료한 참여자는 당첨 확률이 올라가요.<br>
+        · 경품은 응모 시 입력한 연락처로 모바일 발송되며, 잘못 기재된 정보로 인한 미수령은 책임지지 않아요.<br>
+        · 중복 응모, 허위 정보 기재 등 부정 참여가 확인되면 당첨이 취소될 수 있어요.<br>
+        · 수집된 개인정보(닉네임·연락처)는 경품 발송 완료 후 즉시 파기돼요.<br>
+        · 본 이벤트는 내부 사정에 따라 사전 고지 없이 변경되거나 조기 종료될 수 있어요.</p>
+      </div>
+      <div class="footer">KICET 한국세라믹기술원 · @kicet_official</div>
+    </div>
+  </section>
+
+  <!-- 02 테스트 -->
+  <section class="screen" id="quiz">
+    <div class="q-top" onclick="goHome()">←&nbsp; 멘탈 내열 테스트</div>
+    <div><span class="q-num" id="qNum">Q1</span> <span style="color:var(--gray);font-size:14px">/ 6</span></div>
+    <div class="q-bar"><i id="qBar" style="width:16.6%"></i></div>
+    <div class="q-card">
+      <div class="ql" id="qLabel">Q1.</div>
+      <h2 id="qText"></h2>
+      <div class="illust"><img id="qImg" src="" alt="상황 일러스트"></div>
+    </div>
+    <button class="choice" id="chA" onclick="answer(0)"></button>
+    <button class="choice" id="chB" onclick="answer(1)"></button>
+    <p class="q-hint">답을 고르면 자동으로 다음 질문으로 넘어가요</p>
+  </section>
+
+  <!-- 03 로딩 -->
+  <section class="screen" id="loading">
+    <img src="assets/thermo.png" alt="온도계">
+    <h2>당신의 멘탈 온도를 측정하는 중...</h2>
+    <div class="dots"><i></i><i></i><i></i></div>
+    <p class="wait">잠시만 기다려 주세요</p>
+  </section>
+
+  <!-- 04 결과 + 캐러셀 -->
+  <section class="screen" id="result">
+    <p class="r-label">나의 멘탈 내열 온도는?</p>
+    <div class="r-card" id="rCard">
+      <div class="r-char"><img id="rChar" src="" alt="캐릭터"></div>
+      <h2 class="r-head" id="rHead"></h2>
+      <div class="r-temp" id="rTemp"></div>
+      <div class="r-sub" id="rSub"></div>
+      <div class="r-fact" id="rFact"></div>
+    </div>
+    <div class="r-btns">
+      <button onclick="saveImage()">이미지 저장</button>
+      <button onclick="shareLink()">링크 공유</button>
+    </div>
+    <button class="cta" style="margin-top:12px" onclick="openModal()">경품 응모하기</button>
+    <p class="r-again"><span onclick="restart()">테스트 다시하기</span> &nbsp;·&nbsp; <span onclick="nextResultDemo()">다른 유형 구경하기</span></p>
+
+    <div class="tech">
+      <p class="t-label">당신과 닮은 진짜 세라믹 기술</p>
+      <div class="carousel" id="carousel">
+        <div class="t-card"><div class="photo"><img src="assets/rocket.png" alt=""></div>
+          <div class="copy"><h3>🚀 <span class="hl">1,600℃</span>까지 견디는 세라믹</h3><p>우주왕복선이 대기권에 재진입할 때,<br>표면을 지키는 건 세라믹 단열 타일이에요.</p></div></div>
+        <div class="t-card"><div class="photo"><img src="assets/mlcc.png" alt=""></div>
+          <div class="copy"><h3>📱 스마트폰 속 <span class="hl">1,000개</span>의 세라믹</h3><p>쌀알보다 작은 적층세라믹콘덴서(MLCC)가<br>스마트폰 속 전기를 조율하고 있어요.</p></div></div>
+        <div class="t-card"><div class="photo"><img src="assets/pan.png" alt=""></div>
+          <div class="copy"><h3>🍳 <span class="hl">400℃</span>에도 끄떡없는 세라믹</h3><p>세라믹 코팅 팬은 유해물질 걱정 없이<br>매일의 뜨거운 불 위에서 식탁을 지켜요.</p></div></div>
+        <div class="t-card"><div class="photo"><img src="assets/implant.png" alt=""></div>
+          <div class="copy"><h3>💊 몸속에서 <span class="hl">뼈</span>가 되는 세라믹</h3><p>바이오세라믹 임플란트는 37℃ 몸속에서<br>거부반응 없이 몸과 하나가 돼요.</p></div></div>
+      </div>
+      <div class="c-dots" id="cDots"><i class="on"></i><i></i><i></i><i></i></div>
+      <p class="swipe-hint">← 밀어서 다른 세라믹 기술 구경하기</p>
+    </div>
+  </section>
+
+  <!-- 06 완료 -->
+  <section class="screen" id="done">
+    <div class="check"><svg viewBox="0 0 52 52" fill="none"><path d="M10 27 L21 38 L42 15" stroke="#fff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+    <h2>응모가 완료됐어요! 🎉</h2>
+    <p class="d-sub">당첨자 발표는 9월 초<br>인스타그램 DM으로 개별 안내드려요</p>
+    <div class="d-hint"><b>아직 팔로우 전이라면?</b><p>지금 팔로우하면 당첨확률이 올라가요 ⬆</p></div>
+    <button class="cta" onclick="window.open('https://www.instagram.com/kicet_official','_blank')">📸 KICET 인스타그램 바로가기</button>
+    <p class="d-back" onclick="show('result')">결과 카드 다시 보기</p>
+  </section>
+
+  <!-- 05 응모 모달 -->
+  <div id="modal">
+    <div class="m-sheet">
+      <button class="m-close" onclick="closeModal()">✕</button>
+      <h2>🎁 경품 응모하기</h2>
+      <p class="ms">닉네임과 연락처만 입력하면 끝!</p>
+      <div class="field"><label>닉네임</label><input id="fName" placeholder="닉네임을 입력해 주세요"></div>
+      <div class="field"><label>연락처</label><input id="fPhone" placeholder="010-0000-0000" inputmode="tel"></div>
+      <div class="agree"><input type="checkbox" id="fAgree"><label for="fAgree">[필수] 개인정보 수집·이용 동의</label>&nbsp;<a href="#" onclick="alert('개인정보 수집·이용 안내\n· 수집 항목: 닉네임, 연락처\n· 이용 목적: 경품 추첨 및 발송\n· 보유 기간: 경품 발송 완료 후 즉시 파기');return false">보기</a></div>
+      <div class="follow">
+        <label><input type="checkbox" id="fFollow"> KICET 인스타그램 팔로우 완료!</label>
+        <p>팔로우하고 응모하면 당첨확률이 올라가요 ⬆</p>
+      </div>
+      <button class="cta" onclick="submitEntry()">응모 완료하기</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ================= 데이터 ================= */
+const QUESTIONS = [
+  { text:'월요일 아침, 눈 뜨자마자\n알림이 폭탄처럼 쌓여 있다. 나는?', img:'assets/q1.png',
+    choices:[['🔥 "어디 한번 해보자" 바로 돌입','uju'],['☕ 일단 커피 한 잔, 내 페이스로 워밍업','jubang']] },
+  { text:'발표 5분 전, 심장이 쿵쿵. 나는?', img:'assets/q2.png',
+    choices:[['📋 준비한 자료를 마지막까지 다시 점검한다','phone'],['🫁 심호흡하고 "잘될 거야" 스스로를 다독인다','momsok']] },
+  { text:'열심히 한 일에\n예상 못 한 지적이 날아왔다.', img:'assets/q3.png',
+    choices:[['⚡ "오케이, 다시!" 바로 수정 모드','uju'],['🛁 오늘은 일단 회복부터. 내일의 내가 한다','momsok']] },
+  { text:'갑자기 계획이 전부 틀어졌다. 나는?', img:'assets/q4.png',
+    choices:[['🧭 준비해 둔 플랜 B, C를 착착 꺼낸다','phone'],['🍜 "뭐 어때, 일단 밥부터 먹자"','jubang']] },
+  { text:'마감은 코앞, 일은 산더미.\n나의 생존법은?', img:'assets/q5.png',
+    choices:[['🚀 몰아치는 스퍼트로 한 방에 끝낸다','uju'],['⏰ 시간을 쪼개 하나씩 차근차근','phone']] },
+  { text:'번아웃 경보!\n나를 다시 채우는 방법은?', img:'assets/q6.png',
+    choices:[['🌿 아무것도 안 하는 완전한 휴식','momsok'],['🍳 좋아하는 사람들과 맛있는 한 끼','jubang']] }
+];
+const RESULTS = {
+  uju:{ temp:'1,600℃', type:'🚀 극한 멘탈', sub:'🚀 극한 멘탈 · 우주로 간 세라믹', char:'assets/char-pyro.png',
+    desc:'압박이 세질수록\n오히려 불타오르는 당신!',
+    fact:'💡 우주왕복선의 1,600℃ 열을 막아내는 세라믹 단열 타일이에요', slide:0 },
+  phone:{ temp:'1,200℃', type:'📱 정밀 멘탈', sub:'📱 정밀 멘탈 · 스마트폰 속 세라믹', char:'assets/char-robot.png',
+    desc:'위기 속에서도\n디테일을 놓치지 않는 당신!',
+    fact:'💡 스마트폰 속 전기를 조율하는, 쌀알보다 작은 세라믹 MLCC예요', slide:1 },
+  jubang:{ temp:'400℃', type:'🍳 생활 맷집 멘탈', sub:'🍳 생활 맷집 멘탈 · 주방으로 간 세라믹', char:'assets/char-flask.png',
+    desc:'매일 달궈져도\n눌어붙지 않는 당신!',
+    fact:'💡 400℃ 열도 견디는, 유해물질 걱정 없는 세라믹 코팅이에요', slide:2 },
+  momsok:{ temp:'37℃', type:'💊 회복 멘탈', sub:'💊 회복 멘탈 · 몸속으로 간 세라믹', char:'assets/char-blue.png',
+    desc:'뜨겁게 버티기보다\n회복이 빠른 당신!',
+    fact:'💡 거부반응 없이 뼈와 하나 되는 바이오세라믹이에요', slide:3 }
+};
+const TYPE_ORDER = ['uju','phone','jubang','momsok'];
+
+/* ================= 상태 ================= */
+let qi = 0, answers = [], currentType = 'uju';
+
+/* ================= 화면 전환 ================= */
+function show(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+function goHome(){ show('home'); }
+
+/* ================= 히어로 (별 + 콘텐츠) ================= */
+(function buildHero(){
+  const h = document.getElementById('hero');
+  let stars = '';
+  for(let i=0;i<16;i++){
+    const s = 2+Math.round(Math.random()*2);
+    stars += `<span class="star" style="width:${s}px;height:${s}px;left:${Math.random()*95}%;top:${Math.random()*90}%;animation-delay:${(Math.random()*3).toFixed(1)}s"></span>`;
+  }
+  h.innerHTML = stars + `
+    <div class="badge">KICET 인스타 이벤트</div>
+    <h1>내 멘탈은<br><span class="hl">몇 도까지</span> 버틸까?</h1>
+    <p class="sub">스트레스 상황 6문항으로 알아보는<br>나의 멘탈 내열 온도 테스트</p>
+    <div class="box-wrap"><img src="assets/box.png" alt="미스터리 박스"></div>
+    <div class="pill">참여만 해도 경품 추첨 기회!</div>
+    <div class="arrow-hint">▼&nbsp; 30초 만에 내 멘탈 온도 확인 &nbsp;▼</div>
+    <button class="cta" onclick="startQuiz()">멘탈 온도 측정하기</button>
+    <p class="period">이벤트 기간&nbsp; 2026.08.01 – 08.31<br>테스트 참여하고 경품 추첨 응모까지!</p>
+    <div class="scroll-more">아래로 내리면 경품 안내 ↓</div>`;
+})();
+
+/* ================= 퀴즈 ================= */
+function startQuiz(){ qi = 0; answers = []; renderQ(); show('quiz'); }
+function renderQ(){
+  const q = QUESTIONS[qi];
+  document.getElementById('qNum').textContent = 'Q' + (qi+1);
+  document.getElementById('qBar').style.width = ((qi+1)/6*100) + '%';
+  document.getElementById('qLabel').textContent = 'Q' + (qi+1) + '.';
+  document.getElementById('qText').innerHTML = q.text.replace(/\n/g,'<br>');
+  document.getElementById('qImg').src = q.img;
+  document.getElementById('chA').textContent = q.choices[0][0];
+  document.getElementById('chB').textContent = q.choices[1][0];
+  document.getElementById('chA').classList.remove('sel');
+  document.getElementById('chB').classList.remove('sel');
+}
+function answer(i){
+  const btn = i===0 ? document.getElementById('chA') : document.getElementById('chB');
+  btn.classList.add('sel');
+  answers.push(QUESTIONS[qi].choices[i][1]);
+  setTimeout(()=>{
+    qi++;
+    if(qi < QUESTIONS.length){ renderQ(); }
+    else { finishQuiz(); }
+  }, 320);
+}
+function finishQuiz(){
+  show('loading');
+  const type = scoreType();
+  setTimeout(()=>{ renderResult(type); show('result'); }, 2200);
+}
+function scoreType(){
+  const count = {}, last = {};
+  answers.forEach((t,idx)=>{ count[t]=(count[t]||0)+1; last[t]=idx; });
+  let best = null;
+  for(const t of Object.keys(count)){
+    if(!best || count[t] > count[best] || (count[t]===count[best] && last[t] > last[best])) best = t;
+  }
+  return best;
+}
+
+/* ================= 결과 ================= */
+function renderResult(type){
+  currentType = type;
+  const r = RESULTS[type];
+  document.getElementById('rChar').src = r.char;
+  document.getElementById('rHead').innerHTML = r.desc.replace(/\n/g,'<br>');
+  document.getElementById('rTemp').textContent = r.temp;
+  document.getElementById('rSub').textContent = r.sub;
+  document.getElementById('rFact').textContent = r.fact;
+  const car = document.getElementById('carousel');
+  setTimeout(()=>{ car.scrollTo({left: car.clientWidth * r.slide, behavior:'instant'}); updateDots(r.slide); }, 50);
+}
+function restart(){ startQuiz(); }
+function nextResultDemo(){
+  const next = TYPE_ORDER[(TYPE_ORDER.indexOf(currentType)+1) % 4];
+  renderResult(next); window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* 캐러셀 도트 */
+const car = document.getElementById('carousel');
+car.addEventListener('scroll', ()=>{
+  const i = Math.round(car.scrollLeft / car.clientWidth);
+  updateDots(i);
+});
+function updateDots(i){
+  document.querySelectorAll('#cDots i').forEach((d,k)=>d.classList.toggle('on', k===i));
+}
+
+/* 공유 / 저장 */
+function shareLink(){
+  const data = { title:'내 멘탈은 몇 도까지 버틸까?', text:`나의 멘탈 온도는 ${RESULTS[currentType].temp}! 너는 몇 도야?`, url: location.href };
+  if(navigator.share){ navigator.share(data).catch(()=>{}); }
+  else { navigator.clipboard.writeText(data.text + ' ' + data.url); alert('링크가 복사됐어요!'); }
+}
+function saveImage(){
+  const r = RESULTS[currentType];
+  const cv = document.createElement('canvas'); cv.width = 1080; cv.height = 1350;
+  const x = cv.getContext('2d');
+  const g = x.createLinearGradient(0,0,0,1350); g.addColorStop(0,'#EAF1FF'); g.addColorStop(.5,'#FFFFFF');
+  x.fillStyle = g; x.fillRect(0,0,1080,1350);
+  x.textAlign = 'center';
+  x.fillStyle = '#6B7687'; x.font = '500 36px "Noto Sans KR"';
+  x.fillText('나의 멘탈 내열 온도는?', 540, 130);
+  const img = new Image();
+  img.onload = ()=>{
+    const s = 300, ratio = Math.min(s/img.width, s/img.height);
+    x.drawImage(img, 540-img.width*ratio/2, 320-img.height*ratio/2, img.width*ratio, img.height*ratio);
+    x.fillStyle = '#1A1D26'; x.font = '900 64px "Noto Sans KR"';
+    const lines = r.desc.split('\n');
+    lines.forEach((ln, i) => x.fillText(ln, 540, 580 + i*88));
+    x.fillStyle = '#FF7A1A'; x.font = '400 150px "Black Han Sans"';
+    x.fillText(r.temp, 540, 900);
+    x.fillStyle = '#1D5DE0'; x.font = '500 34px "Noto Sans KR"';
+    x.fillText(r.sub, 540, 970);
+    x.fillStyle = '#3A4254'; x.font = '400 32px "Noto Sans KR"';
+    wrap(x, r.fact, 540, 1060, 860, 52);
+    x.fillStyle = '#8A93A3'; x.font = '500 28px "Noto Sans KR"';
+    x.fillText('KICET 멘탈 내열 테스트 · @kicet_official', 540, 1270);
+    const a = document.createElement('a');
+    a.download = 'kicet-mental-' + r.temp.replace(/[,℃]/g,'') + '.png';
+    a.href = cv.toDataURL('image/png'); a.click();
+  };
+  img.src = r.char;
+}
+function wrap(x, text, cx, y, maxW, lh){
+  const words = text.split(' '); let line = '';
+  for(const w of words){
+    if(x.measureText(line + w).width > maxW){ x.fillText(line, cx, y); y += lh; line = w + ' '; }
+    else line += w + ' ';
+  }
+  x.fillText(line, cx, y);
+}
+
+/* ================= 응모 ================= */
+function openModal(){ document.getElementById('modal').classList.add('open'); }
+function closeModal(){ document.getElementById('modal').classList.remove('open'); }
+function submitEntry(){
+  const name = document.getElementById('fName').value.trim();
+  const phone = document.getElementById('fPhone').value.trim();
+  if(!name){ alert('닉네임을 입력해 주세요!'); return; }
+  if(!/^01[0-9]-?\d{3,4}-?\d{4}$/.test(phone)){ alert('연락처를 확인해 주세요! (예: 010-1234-5678)'); return; }
+  if(!document.getElementById('fAgree').checked){ alert('개인정보 수집·이용 동의가 필요해요!'); return; }
+  const entry = { name, phone, follow: document.getElementById('fFollow').checked,
+    type: currentType, temp: RESULTS[currentType].temp, at: new Date().toISOString() };
+  /* TODO 운영 배포 시: Supabase insert로 교체
+     await supabase.from('entries').insert(entry) */
+  const list = JSON.parse(localStorage.getItem('kicet_entries')||'[]');
+  list.push(entry); localStorage.setItem('kicet_entries', JSON.stringify(list));
+  closeModal(); show('done');
+}
+</script>
+</body>
+</html>
